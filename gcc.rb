@@ -19,7 +19,7 @@ class Gcc < Formula
   option 'enable-nls', 'Build with native language support'
   option 'enable-profiled-build', 'Make use of profile guided optimization when bootstrapping GCC'
   option 'enable-multilib', 'Build with multilib support'
-
+  
   fails_with :clang do
     build 421
     cause <<-EOS.undent
@@ -38,6 +38,16 @@ class Gcc < Formula
   depends_on 'libmpc'
   depends_on 'mpfr'
   depends_on 'ecj' if build.include? 'enable-java' or build.include? 'enable-all-languages'
+
+  
+  def patches
+    [
+      # Patch to support std::this_thread::sleep_for etc in GCC 4.7.2, only
+      # relevant until either 4.7.3 is available or 4.8
+      "https://gist.github.com/raw/4693990/4c63a9c04d6203bf65c30999209f99712015063f/enable_libstdcxx_time_yes.diff"
+    ]
+  end
+
 
   def install
     # Force 64-bit on systems that use it. Build failures reported for some
@@ -79,7 +89,8 @@ class Gcc < Formula
       "--with-system-zlib",
       "--enable-stage1-checking",
       "--enable-plugin",
-      "--enable-lto"
+      "--enable-lto",
+      "--enable-libstdcxx-time"
     ]
 
     args << '--disable-nls' unless build.include? 'enable-nls'
